@@ -172,7 +172,7 @@ st.markdown("---")
 
 # --- Sidebar Controls ---
 st.sidebar.title("Circuit Controls")
-num_qubits = st.sidebar.slider("Number of Qubits", min_value=1, max_value=5, value=2, key='num_qubits_slider', help="Adjust the number of qubits for your circuit.")
+num_qubits = st.sidebar.slider("Number of Qubits", min_value=1, max_value=10, value=2, key='num_qubits_slider', help="Adjust the number of qubits for your circuit.")
 st.sidebar.markdown("---")
 if st.sidebar.button("Clear and Reset Circuit", type="primary"):
     st.session_state.circuit = None
@@ -421,6 +421,7 @@ if st.session_state.circuit is not None and st.session_state.state_circuit is no
 
     except Exception as e:
         st.error(f"Error during simulation or visualization: {e}")
+
 
 
 
