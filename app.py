@@ -438,28 +438,50 @@ if st.session_state.circuit is not None and st.session_state.state_circuit is no
         # --- Per-Qubit Bloch Sphere Visualizations ---
         if st.session_state.state_circuit.num_qubits <= 10:
             st.subheader("Per-Qubit Bloch Sphere Visualizations (State Before Measurement)")
+            
             display_qubits = st.session_state.state_circuit.num_qubits
-            cols = st.columns(display_qubits)
-            for i in range(display_qubits):
-                with cols[i]:
-                    reduced_dm_data = get_reduced_density_matrix(full_dm_obj, display_qubits, i)
-                    bx, by, bz = get_bloch_vector_from_rho(reduced_dm_data)
-                    purity = purity_from_rho(reduced_dm_data)
+            num_per_row = 3
+        
+            for row_start in range(0, display_qubits, num_per_row):
+                cols = st.columns(num_per_row)
+        
+                for col_idx, i in enumerate(
+                    range(row_start, min(row_start + num_per_row, display_qubits))
+                ):
+                    with cols[col_idx]:
+                        reduced_dm_data = get_reduced_density_matrix(
+                            full_dm_obj, display_qubits, i
+                        )
+        
+                        bx, by, bz = get_bloch_vector_from_rho(reduced_dm_data)
+                        purity = purity_from_rho(reduced_dm_data)
+        
+                        st.plotly_chart(
+                            plot_bloch_sphere(bx, by, bz, f"Qubit {i}"),
+                            use_container_width=True,
+                            key=f"bloch_qasm_{i}"
+                        )
+        
+                        st.metric(
+                            label=f"Purity (Qubit {i})",
+                            value=f"{purity:.4f}"
+                        )
+        
+                        state_eq = format_quantum_state_equation(purity, bx, by, bz)
+                        st.markdown(f"**Reduced State Equation (Qubit q{i}):**")
+                        st.latex(state_eq)
+        
+                        with st.expander(f"Details for Qubit {i}"):
+                            st.markdown(
+                                f"**Bloch Vector:** `({bx:.3f}, {by:.3f}, {bz:.3f})`"
+                            )
+                            st.markdown("Reduced Density Matrix:")
+                            st.dataframe(np.round(reduced_dm_data, 3))
 
-                    st.plotly_chart(plot_bloch_sphere(bx, by, bz, f"Qubit {i}"), use_container_width=True)
-                    st.metric(label=f"Purity (Qubit {i})", value=f"{purity:.4f}")
-                    
-                    state_eq = format_quantum_state_equation(purity, bx, by, bz)
-                    st.markdown(f"**Reduced State Equation (Qubit q{i}):**")
-                    st.latex(state_eq)
-                    
-                    with st.expander(f"Details for Qubit {i}"):
-                        st.markdown(f"**Bloch Vector:** `({bx:.3f}, {by:.3f}, {bz:.3f})`")
-                        st.markdown("Reduced Density Matrix:")
-                        st.dataframe(np.round(reduced_dm_data, 3))
 
     except Exception as e:
         st.error(f"Error during simulation or visualization: {e}")
+
 
 
 
